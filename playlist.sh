@@ -1,57 +1,96 @@
 #!/usr/bin/env bash
-set -e
+set -Eeuo pipefail
 
-#
-# playlist.sh
-#
-# Download a YouTube playlist as MP3 files using yt-dlp.
-#
-# Requirements:
-#   - yt-dlp
-#   - ffmpeg
-#
-# Usage:
-#   playlist.sh PLAYLIST_URL [COOKIES_FILE]
-#
-# Examples:
-#   playlist.sh https://www.youtube.com/playlist?list=XXXX
-#
-#   playlist.sh https://www.youtube.com/playlist?list=XXXX cookies.txt
-#
-# Cookies are only needed for:
-#   - age restricted videos
-#   - private playlists
-#   - login required content
-#
-# To export cookies:
-#   1. Install Chrome extension "Get cookies.txt LOCALLY"
-#   2. Navigate to youtube.com
-#   3. Click extension → Export
-#   4. Save cookies.txt and pass it as argument
-#
+SCRIPT_NAME="$(basename "$0")"
+COOKIE_FILE=""
 
-if [ $# -lt 1 ]; then
-    echo "Usage: $0 PLAYLIST_URL [COOKIES_FILE]"
-    exit 1
-fi
+print_help() {
+  cat <<EOF
+Usage:
+  $SCRIPT_NAME [OPTIONS] URL
 
-URL="$1"
-COOKIES="$2"
+Download a YouTube playlist as MP3 files using yt-dlp.
+Progress is saved to archive.txt so interrupted downloads can be resumed.
 
-CMD=(
-yt-dlp
--x
---audio-format mp3
---embed-metadata
---embed-thumbnail
---download-archive archive.txt
--o "%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s"
-)
+Arguments:
+  URL                 URL of the playlist to download
 
-if [ -n "$COOKIES" ]; then
-    CMD+=(--cookies "$COOKIES")
-fi
+Options:
+  -c, --cookies FILE  Path to cookies.txt file (required for private or age-restricted content)
+  -h, --help          Show this help message and exit
 
-CMD+=("$URL")
+Examples:
+  $SCRIPT_NAME "https://www.youtube.com/playlist?list=..."
+  $SCRIPT_NAME -c www.youtube.com_cookies.txt "https://www.youtube.com/playlist?list=..."
+EOF
+}
 
-"${CMD[@]}"
+die() {
+  echo "Error: $*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
+}
+
+main() {
+  local url=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h|--help)
+        print_help
+        exit 0
+        ;;
+      -c|--cookies)
+        shift
+        [[ $# -gt 0 ]] || die "Missing value after --cookies"
+        COOKIE_FILE="$1"
+        ;;
+      --)
+        shift
+        [[ $# -eq 1 ]] || die "Expected exactly one URL after --. Use --help for usage."
+        url="$1"
+        break
+        ;;
+      -*)
+        die "Unknown option: $1. Use --help for usage."
+        ;;
+      *)
+        [[ -z "$url" ]] || die "Too many arguments. Use --help for usage."
+        url="$1"
+        ;;
+    esac
+    shift
+  done
+
+  [[ -n "$url" ]] || die "No URL provided. Use --help for usage."
+
+  require_cmd yt-dlp
+  require_cmd ffmpeg
+
+  local -a cmd=(
+    yt-dlp
+    -x
+    --audio-format mp3
+    --embed-metadata
+    --embed-thumbnail
+    --no-mtime
+    --continue
+    --no-overwrites
+    --download-archive archive.txt
+    -o "%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s"
+  )
+
+  if [[ -n "$COOKIE_FILE" ]]; then
+    [[ -f "$COOKIE_FILE" ]] || die "Cookie file not found: $COOKIE_FILE"
+    cmd+=(--cookies "$COOKIE_FILE")
+  fi
+
+  cmd+=("$url")
+
+  "${cmd[@]}"
+}
+
+main "$@"

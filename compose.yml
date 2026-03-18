@@ -1,0 +1,8 @@
+services:
+  yt-dlp:
+    image: rcland12/yt-dlp:latest
+    build: .
+    user: "${UID}:${GID}"
+    volumes:
+      - .:/downloads
+    working_dir: /downloads

@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-
-# To download cookies:
-#   1. Get the chrome extension "Get cookies.txt LOCALLY"
-#   2. Navigate to youtube.com
-#   3. Make sure you are logged in
-#   4. Click on extension, and click "export"
-#   5. Move txt file to this server
-
 set -Eeuo pipefail
 
 SCRIPT_NAME="$(basename "$0")"
@@ -18,18 +10,18 @@ print_help() {
 Usage:
   $SCRIPT_NAME [OPTIONS] URL [URL ...]
 
-Download one or more YouTube videos with yt-dlp using a cookies.txt file.
+Download one or more YouTube videos as MP4 using yt-dlp.
 
 Arguments:
   URL                 One or more video URLs to download
 
 Options:
-  -c, --cookies FILE  Path to cookies.txt file
-  -f, --format FORMAT yt-dlp format selector
+  -c, --cookies FILE  Path to cookies.txt file (default: www.youtube.com_cookies.txt)
+  -f, --format FORMAT yt-dlp format selector (default: best[ext=mp4])
   -h, --help          Show this help message and exit
 
 Examples:
-  $SCRIPT_NAME "https://www.youtube.com/watch?v=nfAqiOVxpDM&t=235s"
+  $SCRIPT_NAME "https://www.youtube.com/watch?v=..."
   $SCRIPT_NAME URL1 URL2 URL3
   $SCRIPT_NAME -c mycookies.txt URL
   $SCRIPT_NAME -f "bv*+ba/b" URL
