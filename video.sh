@@ -76,16 +76,23 @@ main() {
 
   require_cmd yt-dlp
 
-  [[ -f "$COOKIE_FILE" ]] || die "Cookie file not found: $COOKIE_FILE"
   [[ ${#urls[@]} -gt 0 ]] || die "No URL provided. Use --help for usage."
 
-  yt-dlp \
-    --cookies "$COOKIE_FILE" \
-    --no-mtime \
-    --continue \
-    --no-overwrites \
-    --format "$FORMAT" \
-    "${urls[@]}"
+  local -a cmd=(
+    yt-dlp
+    --no-mtime
+    --continue
+    --no-overwrites
+    --format "$FORMAT"
+  )
+
+  if [[ -f "$COOKIE_FILE" ]]; then
+    cmd+=(--cookies "$COOKIE_FILE")
+  fi
+
+  cmd+=("${urls[@]}")
+
+  "${cmd[@]}"
 }
 
 main "$@"

@@ -8,7 +8,7 @@ A collection of bash scripts for downloading YouTube content as MP3 or MP4 using
 | ------------------------------- | ------------------------ | ------------ |
 | `single URL`                    | Single video → MP3       | Not required |
 | `playlist [-c cookies.txt] URL` | Full playlist → MP3s     | Optional     |
-| `video [OPTIONS] URL [URL ...]` | One or more videos → MP4 | Required     |
+| `video [OPTIONS] URL [URL ...]` | One or more videos → MP4 | Optional     |
 
 `playlist` saves progress to `archive.txt` so interrupted downloads resume without re-downloading completed tracks.
 
