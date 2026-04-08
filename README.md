@@ -4,15 +4,15 @@ A collection of bash scripts for downloading YouTube content as MP3 or MP4 using
 
 ## Scripts
 
-| Command                         | Output                   | Cookies      |
-| ------------------------------- | ------------------------ | ------------ |
-| `single URL`                    | Single video → MP3       | Not required |
-| `playlist [-c cookies.txt] URL` | Full playlist → MP3s     | Optional     |
-| `video [OPTIONS] URL [URL ...]` | One or more videos → MP4 | Optional     |
+| Command                         | Output                   | Cookies  |
+| ------------------------------- | ------------------------ | -------- |
+| `single URL`                    | Single video → MP3       | Optional |
+| `playlist [-c cookies.txt] URL` | Full playlist → MP3s     | Optional |
+| `video [OPTIONS] URL [URL ...]` | One or more videos → MP4 | Optional |
 
 `playlist` saves progress to `archive.txt` so interrupted downloads resume without re-downloading completed tracks.
 
-`playlist` and `video` accept `-c, --cookies FILE` to specify a cookies file. `video` also accepts `-f, --format FORMAT` to override the yt-dlp format selector (default: `best[ext=mp4]`).
+Use `-c, --cookies FILE` to specify a cookies file, needed for age-resticted content or for videos and playlists. `video` also accepts `-f, --format FORMAT` to override the yt-dlp format selector (default: `best[ext=mp4]`).
 
 ## Cookies
 

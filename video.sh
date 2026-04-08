@@ -80,6 +80,9 @@ main() {
 
   local -a cmd=(
     yt-dlp
+    --js-runtimes "deno:/usr/local/bin/deno"
+    --remote-components ejs:github
+    --cache-dir /tmp/yt-dlp-cache
     --no-mtime
     --continue
     --no-overwrites

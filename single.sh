@@ -2,22 +2,25 @@
 set -Eeuo pipefail
 
 SCRIPT_NAME="$(basename "$0")"
+COOKIE_FILE=""
 
 print_help() {
   cat <<EOF
 Usage:
-  $SCRIPT_NAME URL
+  $SCRIPT_NAME [OPTIONS] URL
 
-Download a YouTube video as MP3 using yt-dlp.
+Download a YouTube video as audio using yt-dlp.
 
 Arguments:
-  URL         URL of the video to download
+  URL                 URL of the video to download
 
 Options:
-  -h, --help  Show this help message and exit
+  -c, --cookies FILE  Path to cookies.txt file
+  -h, --help          Show this help message and exit
 
 Examples:
   $SCRIPT_NAME "https://www.youtube.com/watch?v=..."
+  $SCRIPT_NAME -c www.youtube.com_cookies.txt "https://www.youtube.com/watch?v=..."
 EOF
 }
 
@@ -39,6 +42,17 @@ main() {
         print_help
         exit 0
         ;;
+      -c|--cookies)
+        shift
+        [[ $# -gt 0 ]] || die "Missing value after --cookies"
+        COOKIE_FILE="$1"
+        ;;
+      --)
+        shift
+        [[ $# -eq 1 ]] || die "Expected exactly one URL after --. Use --help for usage."
+        url="$1"
+        break
+        ;;
       -*)
         die "Unknown option: $1. Use --help for usage."
         ;;
@@ -52,19 +66,29 @@ main() {
 
   [[ -n "$url" ]] || die "No URL provided. Use --help for usage."
 
-  require_cmd yt-dlp
-  require_cmd ffmpeg
+  local -a cmd=(
+    yt-dlp
+    --js-runtimes "deno:/usr/local/bin/deno"
+    --remote-components ejs:github
+    --cache-dir /tmp/yt-dlp-cache
+    -x
+    --audio-format flac
+    --embed-metadata
+    --embed-thumbnail
+    --no-mtime
+    --continue
+    --no-overwrites
+    -o "%(title)s.%(ext)s"
+  )
 
-  yt-dlp \
-    -x \
-    --audio-format mp3 \
-    --embed-metadata \
-    --embed-thumbnail \
-    --no-mtime \
-    --continue \
-    --no-overwrites \
-    -o "%(title)s.%(ext)s" \
-    "$url"
+  if [[ -n "$COOKIE_FILE" ]]; then
+    [[ -f "$COOKIE_FILE" ]] || die "Cookie file not found: $COOKIE_FILE"
+    cmd+=(--cookies "$COOKIE_FILE")
+  fi
+
+  cmd+=("$url")
+
+  "${cmd[@]}"
 }
 
 main "$@"

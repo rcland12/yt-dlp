@@ -72,6 +72,9 @@ main() {
 
   local -a cmd=(
     yt-dlp
+    --js-runtimes "deno:/usr/local/bin/deno"
+    --remote-components ejs:github
+    --cache-dir /tmp/yt-dlp-cache
     -x
     --audio-format mp3
     --embed-metadata
